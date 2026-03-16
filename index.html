@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدرسة SSC لعلوم الرياضة - اختبار القبول</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent: #f59e0b;
+            --bg: #0f172a;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
+        
+        body { 
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+            color: var(--text-main); 
+            line-height: 1.6; 
+            min-height: 100vh;
+        }
+
+        #introScreen {
+            display: flex; align-items: center; justify-content: center;
+            padding: 40px 20px; min-height: 100vh;
+        }
+        .intro-box {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 40px; border-radius: 24px; text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%; max-width: 700px;
+            animation: zoomIn 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        .intro-box::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .logo-img {
+            width: 200px; height: auto; margin: 0 auto 20px auto; display: block;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .school-title { font-size: 2rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; }
+        .school-subtitle { font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 15px; }
+        .school-desc { font-size: 1rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
+        
+        hr.divider { border: 0; height: 1px; background: #e2e8f0; margin: 25px 0; }
+
+        .form-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 20px; }
+        .input-group { text-align: right; margin-bottom: 20px; }
+        .input-group label { display: block; font-weight: 800; margin-bottom: 8px; color: #334155; }
+        .input-group input[type="text"], 
+        .input-group input[type="number"], 
+        .input-group textarea {
+            width: 100%; padding: 15px; border-radius: 12px;
+            border: 2px solid #e2e8f0; outline: none; font-size: 1rem;
+            transition: 0.3s; background: #f8fafc;
+        }
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: var(--primary); background: #ffffff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+        .input-group textarea { resize: vertical; min-height: 100px; }
+
+        .sports-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; }
+        .sport-chip-label { cursor: pointer; }
+        .sport-chip-label input { display: none; }
+        .sport-chip {
+            display: inline-block; padding: 10px 20px; border-radius: 30px;
+            background: #f1f5f9; border: 2px solid #e2e8f0; color: #475569;
+            font-weight: 700; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sport-chip-label input:checked + .sport-chip {
+            background: var(--primary); border-color: var(--primary); color: white;
+            transform: scale(1.05); box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-start {
+            width: 100%; padding: 18px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+            color: white; font-size: 1.2rem; font-weight: 900; cursor: pointer;
+            transition: 0.3s; box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+            margin-top: 10px;
+        }
+        .btn-start:hover { transform: translateY(-3px); box-shadow: 0 15px 25px -5px rgba(37, 99, 235, 0.5); }
+
+        #examScreen { display: none; padding-bottom: 80px; background: #f1f5f9; min-height: 100vh; }
+        .header {
+            background: white; padding: 15px 20px; position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;
+        }
+        .header h2 { color: var(--primary); font-size: 1.2rem; display: flex; align-items: center; gap: 10px;}
+        .header-logo { height: 40px; }
+        
+        .timer-badge {
+            background: #f8fafc; border: 2px solid #e2e8f0; padding: 8px 15px; border-radius: 20px;
+            font-weight: 900; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: var(--text-main);
+        }
+        .timer-warning { background: #fef2f2 !important; border-color: var(--danger) !important; color: var(--danger) !important; animation: pulse 1s infinite; }
+        
+        .exam-container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+        .question-card {
+            background: var(--card-bg); border-radius: 16px; padding: 30px; margin-bottom: 25px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border-right: 5px solid var(--primary);
+            animation: slideUp 0.5s ease backwards;
+        }
+        .question-text { font-size: 1.3rem; font-weight: 800; margin-bottom: 20px; color: var(--text-main); }
+        .question-image { max-width: 100%; max-height: 350px; border-radius: 12px; margin-bottom: 20px; object-fit: contain; display: block; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option-label {
+            display: flex; align-items: center; padding: 18px; border: 2px solid #f1f5f9; background: #f8fafc;
+            border-radius: 12px; cursor: pointer; transition: all 0.2s ease; font-weight: 700; font-size: 1.1rem;
+        }
+        .option-label:hover { border-color: var(--primary); background: #eff6ff; }
+        .option-label input[type="radio"] { margin-left: 15px; transform: scale(1.3); accent-color: var(--primary); }
+        
+        .submit-btn {
+            display: block; width: 100%; max-width: 400px; margin: 40px auto;
+            background: var(--success); color: white; border: none; padding: 20px;
+            border-radius: 15px; font-size: 1.2rem; font-weight: 900; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); transition: 0.3s;
+        }
+        .submit-btn:hover { background: #059669; transform: translateY(-3px); box-shadow: 0 15px 25px rgba(16, 185, 129, 0.4); }
+
+        /* شاشة النتيجة - النجاح (الشهادة) */
+        #resultScreen {
+            display: none; min-height: 100vh; align-items: center; justify-content: center;
+            background: var(--bg); padding: 40px 20px;
+        }
+        .certificate-card {
+            background: #ffffff; padding: 40px; border-radius: 16px; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6); 
+            animation: zoomIn 0.6s ease; max-width: 650px; width: 100%;
+            text-align: center;
+            border: 6px double var(--accent);
+            position: relative;
+        }
+        .cert-logo { width: 130px; margin: 0 auto 20px auto; display: block; }
+        .cert-title { color: var(--primary); font-size: 2.2rem; font-weight: 900; margin-bottom: 10px; }
+        .cert-subtitle { color: var(--text-muted); font-size: 1.2rem; font-weight: 800; margin-bottom: 25px; }
+        .cert-body {
+            background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px;
+        }
+        .cert-text { font-size: 1.2rem; color: #1e293b; font-weight: 700; line-height: 1.8; }
+        .cert-highlight { color: var(--danger); font-weight: 900; }
+        .ticket-box {
+            background: #eff6ff; border: 2px dashed var(--primary); padding: 20px;
+            border-radius: 12px; margin-top: 20px;
+        }
+        .ticket-label { display: block; color: var(--text-muted); font-size: 1rem; font-weight: 800; margin-bottom: 5px; }
+        .ticket-code { font-size: 2.5rem; font-weight: 900; color: var(--primary); letter-spacing: 3px; }
+        .score-small {
+            display: inline-block; background: var(--success); color: white;
+            padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-top: 15px; font-size: 1.1rem;
+        }
+
+        /* شاشة النتيجة - الرسوب */
+        #failScreen {
+            display: none; min-height: 100vh; align-items: center; justify-content: center;
+            background: var(--bg); padding: 40px 20px;
+        }
+        .fail-card {
+            background: #ffffff; padding: 50px; border-radius: 24px; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); animation: zoomIn 0.5s ease; max-width: 500px; width: 100%;
+            text-align: center;
+        }
+        .fail-circle {
+            width: 140px; height: 140px; border-radius: 50%; background: var(--danger); 
+            color: white; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: 900;
+            margin: 0 auto 30px auto; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3); border: 8px solid #fee2e2;
+        }
+
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-12px); } 100% { transform: translateY(0px); } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+<div id="introScreen">
+    <div class="intro-box">
+        <img src="https://firebasestorage.googleapis.com/v0/b/amgg-81ac3.firebasestorage.app/o/photo_2026-03-16_01-35-22-removebg-preview.png?alt=media&token=37826aa1-4ba0-4c0b-a776-e4185be86d4f" alt="SSC Logo" class="logo-img">
+        
+        <h1 class="school-title">مرحباً بك في مدرسة SSC لعلوم الرياضة</h1>
+        <h2 class="school-subtitle">SSC – Supreme School for Sports Science</h2>
+        <p class="school-desc">المدرسة الأولى في الصعيد التي تدمج بين الرياضة الترفيهية والتعليمية 🏆</p>
+        <p class="school-desc">تهدف المدرسة أن تكون أكبر مورد لاعبين للأندية المصرية والعالمية خلال ٤ سنين ⚽</p>
+        
+        <hr class="divider">
+        
+        <h3 class="form-title">📝 اختبار القبول الرسمي</h3>
+        
+        <form id="admissionForm" onsubmit="event.preventDefault(); fetchExam();">
+            
+            <div style="display: flex; gap: 15px;">
+                <div class="input-group" style="flex: 2;">
+                    <label>الاسم الرباعي:</label>
+                    <input type="text" id="studentName" placeholder="أدخل اسمك كاملاً" required>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>العمر:</label>
+                    <input type="number" id="studentAge" placeholder="مثال: 16" required min="5" max="99">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>الرياضة المفضلة (يمكنك اختيار أكثر من واحدة):</label>
+                <div class="sports-grid">
+                    <label class="sport-chip-label"><input type="checkbox" value="كرة القدم" class="sport-checkbox"><span class="sport-chip">⚽ كرة القدم</span></label>
+                    <label class="sport-chip-label"><input type="checkbox" value="الكرة الطائرة" class="sport-checkbox"><span class="sport-chip">🏐 الكرة الطائرة</span></label>
+                    <label class="sport-chip-label"><input type="checkbox" value="تنس الطاولة" class="sport-checkbox"><span class="sport-chip">🏓 تنس الطاولة</span></label>
+                    <label class="sport-chip-label"><input type="checkbox" value="الشطرنج" class="sport-checkbox"><span class="sport-chip">♟️ الشطرنج</span></label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>هل ترى نفسك مستعد لتصبح من أفضل اللاعبين بمصر؟ ولماذا؟</label>
+                <textarea id="studentMotivation" placeholder="اكتب طموحك وسبب استعدادك هنا..." required></textarea>
+            </div>
+
+            <div id="loginError" style="color: var(--danger); font-weight: bold; margin-bottom: 15px; display: none; background: #fee2e2; padding: 10px; border-radius: 8px;"></div>
+
+            <button type="submit" class="btn-start" id="startBtn">التالي - بدء اختبار القبول 🚀</button>
+        </form>
+    </div>
+</div>
+
+<div id="examScreen">
+    <div class="header">
+        <h2>
+            <img src="https://firebasestorage.googleapis.com/v0/b/amgg-81ac3.firebasestorage.app/o/photo_2026-03-16_01-35-22-removebg-preview.png?alt=media&token=37826aa1-4ba0-4c0b-a776-e4185be86d4f" class="header-logo" alt="Logo">
+            اختبار القبول
+        </h2>
+        <div class="timer-badge" id="timerBadge">
+            ⏱️ <span id="timeDisplay">00:00</span>
+        </div>
+    </div>
+    
+    <div class="exam-container" id="examContainer"></div>
+    
+    <button class="submit-btn" onclick="finishExam()">إنهاء وتسليم الإجابات ✅</button>
+</div>
+
+<div id="resultScreen">
+    <div class="certificate-card">
+        <img src="https://firebasestorage.googleapis.com/v0/b/amgg-81ac3.firebasestorage.app/o/photo_2026-03-16_01-35-22-removebg-preview.png?alt=media&token=37826aa1-4ba0-4c0b-a776-e4185be86d4f" alt="SSC Logo" class="cert-logo">
+        <h2 class="cert-title">شهادة اجتياز اختبار القبول 🎉</h2>
+        <p class="cert-subtitle">البطل: <span id="resName" style="color: var(--primary);"></span></p>
+        
+        <div class="cert-body">
+            <p class="cert-text">
+                تهانينا! لقد اجتزت نتيجة الاختبار. الآن أنت مستعد للحصول على تذكرة الاختبارات المقررة للقبول بشرط دفع رسوم الاختبار التي ستكون <span class="cert-highlight">(١٠٠ جنيه)</span>.<br><br>
+                مع العلم أن يوم الاختبار يتحدد بناءً على الأولوية، وسيتم اختبارك في الأربع ألعاب:<br>
+                <span style="color: var(--primary); font-weight: 900;">(القدم - الطائرة - تنس الطاولة - الشطرنج)</span>
+            </p>
+        </div>
+        
+        <div class="ticket-box">
+            <span class="ticket-label">كود التذكرة الخاص بك (احتفظ به)</span>
+            <div class="ticket-code" id="ticketCodeDisplay">SSC-000000</div>
+        </div>
+
+        <div class="score-small" id="scoreDisplay">الدرجة: 0/0</div>
+    </div>
+</div>
+
+<div id="failScreen">
+    <div class="fail-card">
+        <h2 style="margin-bottom: 10px; color: var(--danger); font-size: 2.2rem; font-weight: 900;">عذراً، لم يحالفك الحظ 😔</h2>
+        <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 1.2rem; font-weight: 700;">يا <span id="failName" style="color: var(--text-main);"></span>، لم تتمكن من اجتياز درجة القبول المطلوبة للاختبار.</p>
+        
+        <div class="fail-circle" id="failScoreDisplay">0/0</div>
+        
+        <p style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); line-height: 1.8;">
+            شكراً لمحاولتك ومجهودك.<br>
+            نتمنى لك التوفيق في خطواتك القادمة ومسيرتك الرياضية! ⚽
+        </p>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCIrvgkvKMs3_CokaZ4Fudwfe6XOyZu-7M",
+        authDomain: "sasa-87bff.firebaseapp.com",
+        databaseURL: "https://sasa-87bff-default-rtdb.firebaseio.com",
+        projectId: "sasa-87bff",
+        storageBucket: "sasa-87bff.firebasestorage.app",
+        messagingSenderId: "699606689744",
+        appId: "1:699606689744:web:08614e12b0fe9143ee7bd5",
+        measurementId: "G-HD8VZXSDSR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const DEFAULT_YEAR = "2026";
+    const DEFAULT_EXAM_ID = "test";
+
+    let currentExamData = null;
+    let timerInterval = null;
+    let timeLeft = 0;
+    let studentData = {};
+
+    // 1. توليد أو جلب Device ID من المتصفح
+    let deviceId = localStorage.getItem('ssc_device_id');
+    if (!deviceId) {
+        deviceId = 'dev_' + Math.random().toString(36).substr(2, 10) + '_' + Date.now();
+        localStorage.setItem('ssc_device_id', deviceId);
+    }
+
+    // 2. جلب الـ IP الخاص بالطالب
+    let userIP = 'Unknown';
+    fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => { userIP = data.ip; })
+        .catch(error => console.log('تعذر جلب IP'));
+
+    window.fetchExam = async function() {
+        const btn = document.getElementById('startBtn');
+        const errorDiv = document.getElementById('loginError');
+        
+        // التحقق السريع من المتصفح (إذا كان قد امتحن سابقاً على نفس المتصفح)
+        if (localStorage.getItem('ssc_exam_taken')) {
+            errorDiv.innerText = "❌ لقد قمت بإجراء هذا الاختبار مسبقاً من هذا الجهاز، ولا يمكنك إعادته.";
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        const selectedSports = Array.from(document.querySelectorAll('.sport-checkbox:checked')).map(cb => cb.value);
+        if(selectedSports.length === 0) {
+            alert('برجاء اختيار رياضة مفضلة واحدة على الأقل.');
+            return;
+        }
+
+        studentData = {
+            name: document.getElementById('studentName').value.trim(),
+            age: document.getElementById('studentAge').value.trim(),
+            sports: selectedSports,
+            motivation: document.getElementById('studentMotivation').value.trim(),
+            submissionTime: new Date().toLocaleString('ar-EG'),
+            deviceId: deviceId, // تخزين معرف الجهاز
+            ip: userIP          // تخزين الـ IP
+        };
+
+        btn.innerHTML = 'جاري التحقق من البيانات... ⏳';
+        btn.style.opacity = '0.8';
+        btn.disabled = true;
+
+        try {
+            // 3. التحقق من قاعدة البيانات: هل هذا الـ IP أو الجهاز امتحن من قبل؟
+            const resultsRef = ref(db, `exam_results/${DEFAULT_YEAR}/${DEFAULT_EXAM_ID}`);
+            const resultsSnapshot = await get(resultsRef);
+            
+            if (resultsSnapshot.exists()) {
+                const allPastResults = Object.values(resultsSnapshot.val());
+                const hasTakenBefore = allPastResults.some(attempt => 
+                    attempt.deviceId === deviceId || (attempt.ip === userIP && userIP !== 'Unknown')
+                );
+
+                if (hasTakenBefore) {
+                    errorDiv.innerText = "❌ عذراً، نظامنا يوضح أنك قمت بإجراء الاختبار مسبقاً (سواء من نفس الـ IP أو الجهاز).";
+                    errorDiv.style.display = 'block';
+                    btn.innerHTML = 'التالي - بدء اختبار القبول 🚀';
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                    return;
+                }
+            }
+
+            // إذا لم يسبق له الامتحان، نجلب أسئلة الاختبار
+            const examSnapshot = await get(ref(db, `exams/${DEFAULT_YEAR}/${DEFAULT_EXAM_ID}`));
+            if (examSnapshot.exists()) {
+                currentExamData = examSnapshot.val();
+                errorDiv.style.display = 'none';
+                startExam();
+            } else {
+                errorDiv.innerText = "❌ عذراً، الامتحان غير متاح حالياً!";
+                errorDiv.style.display = 'block';
+                btn.innerHTML = 'التالي - بدء اختبار القبول 🚀';
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error(error);
+            errorDiv.innerText = "❌ حدث خطأ في الاتصال بقاعدة البيانات.";
+            errorDiv.style.display = 'block';
+            btn.innerHTML = 'التالي - بدء اختبار القبول 🚀';
+            btn.style.opacity = '1';
+            btn.disabled = false;
+        }
+    };
+
+    function startExam() {
+        document.body.style.background = '#f1f5f9';
+        document.getElementById('introScreen').style.display = 'none';
+        document.getElementById('examScreen').style.display = 'block';
+        window.scrollTo(0, 0);
+
+        timeLeft = (currentExamData.duration || 60) * 60;
+        updateTimerDisplay();
+        timerInterval = setInterval(timerTick, 1000);
+
+        const container = document.getElementById('examContainer');
+        container.innerHTML = '';
+
+        currentExamData.questions.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.style.animationDelay = `${index * 0.15}s`;
+
+            let imageHTML = q.imageUrl ? `<img src="${q.imageUrl}" class="question-image" alt="صورة للسؤال">` : '';
+            
+            let optionsHTML = '<div class="options">';
+            q.options.forEach(opt => {
+                optionsHTML += `
+                    <label class="option-label" onclick="highlightSelected(this)">
+                        <input type="radio" name="q_${index}" value="${opt}">
+                        ${opt}
+                    </label>
+                `;
+            });
+            optionsHTML += '</div>';
+
+            card.innerHTML = `
+                <div class="question-text">${index + 1}. ${q.question}</div>
+                ${imageHTML}
+                ${optionsHTML}
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    window.highlightSelected = function(labelElement) {
+        const siblings = labelElement.parentElement.querySelectorAll('.option-label');
+        siblings.forEach(sib => {
+            sib.style.borderColor = '#f1f5f9';
+            sib.style.background = '#f8fafc';
+        });
+        labelElement.style.borderColor = 'var(--primary)';
+        labelElement.style.background = '#eff6ff';
+    };
+
+    function timerTick() {
+        if(timeLeft <= 0) {
+            clearInterval(timerInterval);
+            finishExam();
+            return;
+        }
+        timeLeft--;
+        updateTimerDisplay();
+        
+        if(timeLeft <= 60) {
+            document.getElementById('timerBadge').classList.add('timer-warning');
+        }
+    }
+
+    function updateTimerDisplay() {
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        document.getElementById('timeDisplay').innerText = 
+            `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function generateTicketCode() {
+        return 'SSC-' + Math.floor(100000 + Math.random() * 900000);
+    }
+
+    window.finishExam = async function() {
+        clearInterval(timerInterval);
+        
+        // وضع علامة في المتصفح بأنه تم أداء الامتحان لتجنب الإعادة الفورية
+        localStorage.setItem('ssc_exam_taken', 'true');
+
+        let score = 0;
+        const total = currentExamData.questions.length;
+
+        currentExamData.questions.forEach((q, index) => {
+            const selected = document.querySelector(`input[name="q_${index}"]:checked`);
+            if(selected && selected.value === q.correctAnswer) {
+                score++;
+            }
+        });
+
+        const passingScore = Math.ceil(total / 2); // درجة النجاح هي النصف
+        const hasPassed = score >= passingScore;
+
+        let uniqueTicketCode = null;
+        if (hasPassed) {
+            uniqueTicketCode = generateTicketCode();
+            studentData.ticketCode = uniqueTicketCode;
+        } else {
+            studentData.ticketCode = "Failed (لم يجتز)"; // توضيح في الداتا بيز أنه رسب
+        }
+
+        studentData.score = score;
+        studentData.totalScore = total;
+        studentData.status = hasPassed ? "Pass (ناجح)" : "Fail (راسب)";
+
+        // حفظ البيانات في قاعدة البيانات
+        try {
+            const resultsRef = ref(db, `exam_results/${DEFAULT_YEAR}/${DEFAULT_EXAM_ID}`);
+            const newStudentRef = push(resultsRef);
+            await set(newStudentRef, studentData);
+            console.log("تم حفظ بيانات الطالب بنجاح");
+        } catch (error) {
+            console.error("خطأ أثناء حفظ البيانات:", error);
+        }
+
+        // إخفاء شاشة الامتحان
+        document.body.style.background = 'var(--bg)';
+        document.getElementById('examScreen').style.display = 'none';
+
+        // إظهار الشاشة المناسبة بناءً على النتيجة
+        if (hasPassed) {
+            document.getElementById('resultScreen').style.display = 'flex';
+            document.getElementById('resName').innerText = studentData.name.split(' ')[0];
+            document.getElementById('ticketCodeDisplay').innerText = uniqueTicketCode;
+            document.getElementById('scoreDisplay').innerText = `الدرجة: ${score}/${total}`;
+        } else {
+            document.getElementById('failScreen').style.display = 'flex';
+            document.getElementById('failName').innerText = studentData.name.split(' ')[0];
+            document.getElementById('failScoreDisplay').innerText = `${score}/${total}`;
+        }
+    };
+</script>
+</body>
+</html>
