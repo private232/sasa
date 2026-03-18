@@ -60,14 +60,17 @@
         .form-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 20px; }
         .input-group { text-align: right; margin-bottom: 20px; }
         .input-group label { display: block; font-weight: 800; margin-bottom: 8px; color: #334155; }
+        
+        /* تمت إضافة select ليتماشى مع تصميم الحقول */
         .input-group input[type="text"], 
         .input-group input[type="number"], 
+        .input-group select,
         .input-group textarea {
             width: 100%; padding: 15px; border-radius: 12px;
             border: 2px solid #e2e8f0; outline: none; font-size: 1rem;
             transition: 0.3s; background: #f8fafc;
         }
-        .input-group input:focus, .input-group textarea:focus {
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
             border-color: var(--primary); background: #ffffff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
         .input-group textarea { resize: vertical; min-height: 100px; }
@@ -200,7 +203,7 @@
         
         <hr class="divider">
         
-        <h3 class="form-title">📝 اختبار القبول الرسمي</h3>
+        <h3 class="form-title">📝 بيانات استمارة القبول</h3>
         
         <form id="admissionForm" onsubmit="event.preventDefault(); fetchExam();">
             
@@ -212,6 +215,44 @@
                 <div class="input-group" style="flex: 1;">
                     <label>العمر:</label>
                     <input type="number" id="studentAge" placeholder="مثال: 16" required min="5" max="99">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>الطول (سم):</label>
+                    <input type="number" id="studentHeight" placeholder="مثال: 165" required min="80" max="250">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>الوزن (كجم):</label>
+                    <input type="number" id="studentWeight" placeholder="مثال: 60" required min="15" max="200">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>مقاس التيشرت والشورت:</label>
+                    <select id="studentClothesSize" required>
+                        <option value="" disabled selected>اختر المقاس</option>
+                        <optgroup label="مقاسات الأطفال">
+                            <option value="Kids 6">6 سنوات</option>
+                            <option value="Kids 8">8 سنوات</option>
+                            <option value="Kids 10">10 سنوات</option>
+                            <option value="Kids 12">12 سنة</option>
+                            <option value="Kids 14">14 سنة</option>
+                        </optgroup>
+                        <optgroup label="مقاسات الكبار">
+                            <option value="S">S (صغير)</option>
+                            <option value="M">M (متوسط)</option>
+                            <option value="L">L (كبير)</option>
+                            <option value="XL">XL (كبير جداً)</option>
+                            <option value="XXL">XXL</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>مقاس الحذاء (الكتشي):</label>
+                    <input type="number" id="studentShoeSize" placeholder="مثال: 41" required min="25" max="50">
                 </div>
             </div>
 
@@ -316,14 +357,12 @@
     let timeLeft = 0;
     let studentData = {};
 
-    // 1. توليد أو جلب Device ID من المتصفح
     let deviceId = localStorage.getItem('ssc_device_id');
     if (!deviceId) {
         deviceId = 'dev_' + Math.random().toString(36).substr(2, 10) + '_' + Date.now();
         localStorage.setItem('ssc_device_id', deviceId);
     }
 
-    // 2. جلب الـ IP الخاص بالطالب
     let userIP = 'Unknown';
     fetch('https://api.ipify.org?format=json')
         .then(response => response.json())
@@ -334,7 +373,6 @@
         const btn = document.getElementById('startBtn');
         const errorDiv = document.getElementById('loginError');
         
-        // التحقق السريع من المتصفح (إذا كان قد امتحن سابقاً على نفس المتصفح)
         if (localStorage.getItem('ssc_exam_taken')) {
             errorDiv.innerText = "❌ لقد قمت بإجراء هذا الاختبار مسبقاً من هذا الجهاز، ولا يمكنك إعادته.";
             errorDiv.style.display = 'block';
@@ -347,14 +385,25 @@
             return;
         }
 
+        const clothesSize = document.getElementById('studentClothesSize').value;
+        if(!clothesSize) {
+            alert('برجاء اختيار مقاس التيشرت والشورت.');
+            return;
+        }
+
+        // تم إضافة الحقول الجديدة هنا لتسجيلها في الأوبجيكت
         studentData = {
             name: document.getElementById('studentName').value.trim(),
             age: document.getElementById('studentAge').value.trim(),
+            height: document.getElementById('studentHeight').value.trim(),      // الطول
+            weight: document.getElementById('studentWeight').value.trim(),      // الوزن
+            clothesSize: clothesSize,                                           // مقاس الملابس
+            shoeSize: document.getElementById('studentShoeSize').value.trim(),  // مقاس الحذاء
             sports: selectedSports,
             motivation: document.getElementById('studentMotivation').value.trim(),
             submissionTime: new Date().toLocaleString('ar-EG'),
-            deviceId: deviceId, // تخزين معرف الجهاز
-            ip: userIP          // تخزين الـ IP
+            deviceId: deviceId, 
+            ip: userIP          
         };
 
         btn.innerHTML = 'جاري التحقق من البيانات... ⏳';
@@ -362,7 +411,6 @@
         btn.disabled = true;
 
         try {
-            // 3. التحقق من قاعدة البيانات: هل هذا الـ IP أو الجهاز امتحن من قبل؟
             const resultsRef = ref(db, `exam_results/${DEFAULT_YEAR}/${DEFAULT_EXAM_ID}`);
             const resultsSnapshot = await get(resultsRef);
             
@@ -382,7 +430,6 @@
                 }
             }
 
-            // إذا لم يسبق له الامتحان، نجلب أسئلة الاختبار
             const examSnapshot = await get(ref(db, `exams/${DEFAULT_YEAR}/${DEFAULT_EXAM_ID}`));
             if (examSnapshot.exists()) {
                 currentExamData = examSnapshot.val();
@@ -483,7 +530,6 @@
     window.finishExam = async function() {
         clearInterval(timerInterval);
         
-        // وضع علامة في المتصفح بأنه تم أداء الامتحان لتجنب الإعادة الفورية
         localStorage.setItem('ssc_exam_taken', 'true');
 
         let score = 0;
@@ -496,7 +542,7 @@
             }
         });
 
-        const passingScore = Math.ceil(total / 2); // درجة النجاح هي النصف
+        const passingScore = Math.ceil(total / 2);
         const hasPassed = score >= passingScore;
 
         let uniqueTicketCode = null;
@@ -504,14 +550,13 @@
             uniqueTicketCode = generateTicketCode();
             studentData.ticketCode = uniqueTicketCode;
         } else {
-            studentData.ticketCode = "Failed (لم يجتز)"; // توضيح في الداتا بيز أنه رسب
+            studentData.ticketCode = "Failed (لم يجتز)";
         }
 
         studentData.score = score;
         studentData.totalScore = total;
         studentData.status = hasPassed ? "Pass (ناجح)" : "Fail (راسب)";
 
-        // حفظ البيانات في قاعدة البيانات
         try {
             const resultsRef = ref(db, `exam_results/${DEFAULT_YEAR}/${DEFAULT_EXAM_ID}`);
             const newStudentRef = push(resultsRef);
@@ -521,11 +566,9 @@
             console.error("خطأ أثناء حفظ البيانات:", error);
         }
 
-        // إخفاء شاشة الامتحان
         document.body.style.background = 'var(--bg)';
         document.getElementById('examScreen').style.display = 'none';
 
-        // إظهار الشاشة المناسبة بناءً على النتيجة
         if (hasPassed) {
             document.getElementById('resultScreen').style.display = 'flex';
             document.getElementById('resName').innerText = studentData.name.split(' ')[0];
