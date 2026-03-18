@@ -374,7 +374,7 @@
         const errorDiv = document.getElementById('loginError');
         
         if (localStorage.getItem('ssc_exam_taken')) {
-            errorDiv.innerText = "❌ لقد قمت بإجراء هذا الاختبار مسبقاً من هذا الجهاز، ولا يمكنك إعادته.";
+            errorDiv.innerText = "❌ لقد قمت بإجراء هذا الاختبار مسبقاً ، ولا يمكنك إعادته.";
             errorDiv.style.display = 'block';
             return;
         }
