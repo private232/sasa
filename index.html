@@ -61,7 +61,6 @@
         .input-group { text-align: right; margin-bottom: 20px; }
         .input-group label { display: block; font-weight: 800; margin-bottom: 8px; color: #334155; }
         
-        /* تمت إضافة select ليتماشى مع تصميم الحقول */
         .input-group input[type="text"], 
         .input-group input[type="number"], 
         .input-group select,
@@ -350,7 +349,7 @@
     const db = getDatabase(app);
 
     const DEFAULT_YEAR = "2026";
-    const DEFAULT_EXAM_ID = "Test";
+    const DEFAULT_EXAM_ID = "test";
 
     let currentExamData = null;
     let timerInterval = null;
@@ -374,7 +373,7 @@
         const errorDiv = document.getElementById('loginError');
         
         if (localStorage.getItem('ssc_exam_taken')) {
-            errorDiv.innerText = "❌ لقد قمت بإجراء هذا الاختبار مسبقاً ، ولا يمكنك إعادته.";
+            errorDiv.innerText = "❌ لقد قمت بإجراء هذا الاختبار مسبقاً من هذا الجهاز، ولا يمكنك إعادته.";
             errorDiv.style.display = 'block';
             return;
         }
@@ -391,14 +390,13 @@
             return;
         }
 
-        // تم إضافة الحقول الجديدة هنا لتسجيلها في الأوبجيكت
         studentData = {
             name: document.getElementById('studentName').value.trim(),
             age: document.getElementById('studentAge').value.trim(),
-            height: document.getElementById('studentHeight').value.trim(),      // الطول
-            weight: document.getElementById('studentWeight').value.trim(),      // الوزن
-            clothesSize: clothesSize,                                           // مقاس الملابس
-            shoeSize: document.getElementById('studentShoeSize').value.trim(),  // مقاس الحذاء
+            height: document.getElementById('studentHeight').value.trim(),
+            weight: document.getElementById('studentWeight').value.trim(),
+            clothesSize: clothesSize,
+            shoeSize: document.getElementById('studentShoeSize').value.trim(),
             sports: selectedSports,
             motivation: document.getElementById('studentMotivation').value.trim(),
             submissionTime: new Date().toLocaleString('ar-EG'),
@@ -473,10 +471,11 @@
             let imageHTML = q.imageUrl ? `<img src="${q.imageUrl}" class="question-image" alt="صورة للسؤال">` : '';
             
             let optionsHTML = '<div class="options">';
-            q.options.forEach(opt => {
+            q.options.forEach((opt, optIndex) => {
+                // التعديل هنا: استخدام optIndex (الرقم) كقيمة للاختيار بدل النص الكامل لتفادي مشاكل الـ HTML
                 optionsHTML += `
                     <label class="option-label" onclick="highlightSelected(this)">
-                        <input type="radio" name="q_${index}" value="${opt}">
+                        <input type="radio" name="q_${index}" value="${optIndex}">
                         ${opt}
                     </label>
                 `;
@@ -527,6 +526,13 @@
         return 'SSC-' + Math.floor(100000 + Math.random() * 900000);
     }
 
+    // دالة لتنظيف النصوص من المسافات وعلامات الترقيم لتفادي أخطاء الإدخال البسيطة
+    function normalizeText(text) {
+        if (!text) return "";
+        // إزالة كل المسافات، النقاط، الفواصل، وعلامات التنصيص
+        return text.replace(/[\s.,؛،"']/g, '');
+    }
+
     window.finishExam = async function() {
         clearInterval(timerInterval);
         
@@ -536,9 +542,15 @@
         const total = currentExamData.questions.length;
 
         currentExamData.questions.forEach((q, index) => {
-            const selected = document.querySelector(`input[name="q_${index}"]:checked`);
-            if(selected && selected.value === q.correctAnswer) {
-                score++;
+            const selectedRadio = document.querySelector(`input[name="q_${index}"]:checked`);
+            if(selectedRadio) {
+                // نجلب النص الخاص بالاختيار باستخدام الـ Index الذي حفظناه
+                const selectedText = q.options[selectedRadio.value];
+                
+                // نقارن النصين بعد تنظيفهم من الفروقات التافهة (مسافات/نقاط زيادة)
+                if(normalizeText(selectedText) === normalizeText(q.correctAnswer)) {
+                    score++;
+                }
             }
         });
 
